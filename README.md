@@ -1,0 +1,1 @@
+An implementation of LiveChat using Node.js, Backbone.js, jQuery, require.js and mongodb.
