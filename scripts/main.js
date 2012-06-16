@@ -5,36 +5,59 @@
     var $;
     $ = jQuery;
     return $(function() {
-      var Chat, ChatSubmit, Post, chat, chatSubmit;
+      var Chat, ChatInput, ChatView, Post, chat, chatInput, chatView;
       Post = Backbone.Model.extend({
+        initialize: function(text, time) {
+          this.set({
+            text: text
+          });
+          this.set({
+            time: time
+          });
+        },
         text: null,
         time: null
       });
       Chat = Backbone.Collection.extend({
         model: Post
       });
-      chat = new Chat;
-      ChatSubmit = Backbone.View.extend({
+      ChatView = Backbone.View.extend({
+        el: $('#chat-view'),
+        initialize: function() {
+          _.bindAll(this, 'render');
+          chat.bind('add', this.render);
+        },
+        render: function() {
+          var post, _i, _len, _ref;
+          $(this.el).html('');
+          _ref = chat.models;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            post = _ref[_i];
+            $(this.el).append("<li> " + (post.get("text")) + " <span class='timestamp'>" + (post.get("time")) + "</span></li>");
+          }
+          return this;
+        }
+      });
+      ChatInput = Backbone.View.extend({
         el: $('#chat-submit'),
         initialize: function() {
-          _.bindAll(this, 'submit', 'render');
+          _.bindAll(this, 'submit');
           $('#chat-input').focus().select();
           return this.submit();
         },
         submit: function() {
           return $(this.el).on('click', function(e) {
+            var post;
             e.preventDefault();
-            chat.add({
-              text: $('#chat-input').val(),
-              time: new Date()
-            });
-            console.log(JSON.stringify(chat));
-            $('#chat-ul').append('<li>' + $('#chat-input').val() + "<span class='timestamp'>" + new Date() + "</span></li>");
+            post = new Post($('#chat-input').val(), new Date());
+            chat.add(post);
             return $('#chat-input').val('');
           });
         }
       });
-      return chatSubmit = new ChatSubmit();
+      chat = new Chat;
+      chatView = new ChatView();
+      return chatInput = new ChatInput();
     });
   });
 
