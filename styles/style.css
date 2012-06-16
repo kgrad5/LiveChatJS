@@ -1,4 +1,23 @@
-#main-list {
+#chat-ul {
 	list-style: none;
 	font-size: 14pt;
+}
+
+#chat-ul li {
+	width: 600px;
+	padding: 10px;
+	border: 1px solid black;
+	margin-bottom: 10px;
+}
+
+.timestamp {
+	float: right;
+	color: red;
+	font-size: 8pt;
+}
+
+#chat-input {
+	width: 600px;
+	margin-left: 40px;
+	padding: 0px 10px;
 }

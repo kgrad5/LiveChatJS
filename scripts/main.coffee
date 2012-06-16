@@ -3,17 +3,33 @@ require(["libs/jquery-1.7.2.min", "libs/underscore-min", "libs/backbone-min"], -
 	$ = jQuery
 
 	$ ->
-		ListView = Backbone.View.extend({
+		
+		Post = Backbone.Model.extend text: null, time: null
+		Chat = Backbone.Collection.extend model: Post
+		
+		chat = new Chat
+		
+		ChatSubmit = Backbone.View.extend({
 			
-			el: $('body') #attaches this.el to an existing element
+			el: $('#chat-submit') #attaches this.el to an existing element
 
 			initialize: ->
-				_.bindAll(@, 'render')
-				@render()
+				_.bindAll(@, 'submit', 'render')
+				$('#chat-input').focus().select()
+				@submit()
 
-			render: ->
-				$(@el).append("<ul id='main-list'> <li>hello world</li><ul>")
+			submit: ->
+				$(@el).on 'click', (e) -> 
+					e.preventDefault()
+					chat.add text: $('#chat-input').val(), time: new Date()
+					console.log JSON.stringify chat
+					$('#chat-ul').append '<li>' + $('#chat-input').val() + "<span class='timestamp'>" + 
+						new Date() + "</span></li>"
+					$('#chat-input').val('')
+													
 		})
+		
+		
 
-		listView = new ListView()
+		chatSubmit = new ChatSubmit()
 )

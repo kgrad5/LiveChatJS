@@ -5,18 +5,36 @@
     var $;
     $ = jQuery;
     return $(function() {
-      var ListView, listView;
-      ListView = Backbone.View.extend({
-        el: $('body'),
+      var Chat, ChatSubmit, Post, chat, chatSubmit;
+      Post = Backbone.Model.extend({
+        text: null,
+        time: null
+      });
+      Chat = Backbone.Collection.extend({
+        model: Post
+      });
+      chat = new Chat;
+      ChatSubmit = Backbone.View.extend({
+        el: $('#chat-submit'),
         initialize: function() {
-          _.bindAll(this, 'render');
-          return this.render();
+          _.bindAll(this, 'submit', 'render');
+          $('#chat-input').focus().select();
+          return this.submit();
         },
-        render: function() {
-          return $(this.el).append("<ul id='main-list'> <li>hello world</li><ul>");
+        submit: function() {
+          return $(this.el).on('click', function(e) {
+            e.preventDefault();
+            chat.add({
+              text: $('#chat-input').val(),
+              time: new Date()
+            });
+            console.log(JSON.stringify(chat));
+            $('#chat-ul').append('<li>' + $('#chat-input').val() + "<span class='timestamp'>" + new Date() + "</span></li>");
+            return $('#chat-input').val('');
+          });
         }
       });
-      return listView = new ListView();
+      return chatSubmit = new ChatSubmit();
     });
   });
 
