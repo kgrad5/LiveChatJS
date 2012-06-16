@@ -1,8 +1,16 @@
-require(["libs/jquery-1.7.2.min", "libs/underscore-min", "libs/backbone-min"], ->
+requirejs.config 
+	baseUrl: 'scripts/lib'
+	shim: 
+		'backbone': 
+			deps: ['underscore', 'jquery']
+			exports: 'Backbone'
+		'underscore':
+			deps: ['jquery']
+			exports: '_'
+	
+requirejs ["backbone", "underscore", "jquery"], (Backbone, _, $) ->
 
-	$ = jQuery
-
-	$ ->
+	app = ($) ->
 		
 		Post = Backbone.Model.extend 
 			initialize: (text, time) -> 
@@ -30,30 +38,29 @@ require(["libs/jquery-1.7.2.min", "libs/underscore-min", "libs/backbone-min"], -
 				
 				# Re-render the entire chat. This is inefficient.
 				for post in chat.models
-					$(@el).append "<li> #{post.get("text")} <span class='timestamp'>#{post.get("time")}</span></li>"
+					$(@el).append "<li>#{post.get("text")}<span class='timestamp'>#{post.get("time")}</span></li>"
 				return @
 		
 		# The input and submit button
-		ChatInput = Backbone.View.extend({
-			
+		ChatInput = Backbone.View.extend
 			el: $('#chat-submit') 
+			
+			events: 
+				'click': 'submit'
 
 			initialize: ->
-				_.bindAll(@, 'submit')
+				_.bindAll(@, 'submit') 
 				$('#chat-input').focus().select()
-				@submit()
 
-			submit: ->
-				$(@el).on 'click', (e) -> 
-					e.preventDefault()
-					post = new Post($('#chat-input').val(), new Date()) 
-					chat.add(post)
-					$('#chat-input').val('')
-													
-		})
+			submit: (e) ->
+				e.preventDefault()
+				post = new Post($('#chat-input').val(), new Date()) 
+				chat.add(post)
+				$('#chat-input').val('')
 
 		# Application
 		chat = new Chat
 		chatView = new ChatView()
 		chatInput = new ChatInput()
-)
+	
+	app(jQuery)
