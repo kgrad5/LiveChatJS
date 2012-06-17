@@ -4,12 +4,19 @@ fs = require 'fs'
 path = require 'path'
 qs = require 'querystring'
 
+mongo = require 'mongodb'
+Server = mongo.Server
+Db = mongo.Db
+
+server = new Server('localhost', 27017, {auto_reconnect: true});
+db = new Db 'chat', server
+
 start = ->
 	http.createServer(requestHandler).listen(8888)	
 	console.log "Server has started."
 
 requestHandler = (request, response) ->
-	console.log "Request received for:", request.url, "with type:", request.method
+	console.log request.method, request.url
 	file_path = "." + request.url
 	
 	if request.method is 'GET'
@@ -22,23 +29,36 @@ requestHandler = (request, response) ->
 	
 	
 getHandler = (file_path, response) ->
-	console.log "GET received, GET Handler responding"
 	router file_path, response
 	
 postHandler = (file_path, request, response) ->
-	console.log "POST received, POST Handler responding"
 	body = ''
 	request.on 'data', (data) ->
 		body += data
 	request.on 'end', ->
-		POST = qs.parse body
-		console.log POST
-	
+		obj = JSON.parse(body)
+		db.open (err, db) ->
+			if not err 
+				db.collection 'posts', (err, collection) ->
+					collection.insert({"text": obj.text, "time": obj.time})
+			db.close()
 	router file_path, response
 	
 router = (file_path, response) ->
 	if file_path is './'
 		serveSync "app/views/index.html", response, "text/html" 
+		return
+	else if file_path is './chat'
+		db.open (err, db) ->
+			if not err
+				db.collection 'posts', (err, collection) ->
+					collection.find().toArray (err, docs) ->
+						response.writeHead 200, 'Content-Type': 'text/JSON'
+						for doc in docs							
+							response.write JSON.stringify(doc)
+						
+						response.end()
+						db.close()
 		return
 		
 	extension = path.extname file_path

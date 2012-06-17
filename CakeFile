@@ -7,3 +7,6 @@ task 'build', 'Build project from scripts/*.coffee to scripts/*.js', ->
 	exec 'coffee --compile --output app/js/models app/coffee/models', (err, stdout, stderr) ->
 		throw err if err
 		console.log stdout + stderr
+	exec 'coffee --compile --output app/js/views app/coffee/views', (err, stdout, stderr) ->
+		throw err if err
+		console.log stdout + stderr

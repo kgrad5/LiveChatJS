@@ -15,55 +15,35 @@
     },
     paths: {
       js: '../js',
-      model: '../js/models'
+      model: '../js/models',
+      view: '../js/views'
     }
   });
 
-  requirejs(["backbone", "underscore", "jquery", "model/post"], function(Backbone, _, $, Post) {
+  requirejs(["backbone", "underscore", "jquery", "model/post", "view/chatInput", "view/chatView"], function(Backbone, _, $, Post, ChatInput, ChatView) {
     var app;
     app = function($) {
-      var Chat, ChatInput, ChatView, chat, chatInput, chatView;
+      var Chat, chat, chatInput, chatView, chatlog;
       Chat = Backbone.Collection.extend({
         model: Post
       });
-      ChatView = Backbone.View.extend({
-        el: $('#chat-view'),
-        initialize: function() {
-          _.bindAll(this, 'render');
-          chat.bind('add', this.render);
-        },
-        render: function() {
-          var post, _i, _len, _ref;
-          $(this.el).html('');
-          _ref = chat.models;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            post = _ref[_i];
-            $(this.el).append("<li>" + (post.get("text")) + "<span class='timestamp'>" + (post.get("time")) + "</span></li>");
-          }
-          return this;
+      chat = new Chat();
+      chatlog = '';
+      $.get('/chat', function(data) {
+        var hash, post, _i, _len, _results;
+        data = data.split('}');
+        data.pop();
+        _results = [];
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+          hash = data[_i];
+          hash = JSON.parse(hash + '}');
+          post = new Post(hash.text, hash.time);
+          _results.push(chat.add(post));
         }
+        return _results;
       });
-      ChatInput = Backbone.View.extend({
-        el: $('#chat-submit'),
-        events: {
-          'click': 'submit'
-        },
-        initialize: function() {
-          _.bindAll(this, 'submit');
-          return $('#chat-input').focus().select();
-        },
-        submit: function(e) {
-          var post;
-          e.preventDefault();
-          post = new Post($('#chat-input').val(), new Date());
-          chat.add(post);
-          post.save();
-          return $('#chat-input').val('');
-        }
-      });
-      chat = new Chat;
-      chatView = new ChatView();
-      return chatInput = new ChatInput();
+      chatView = new ChatView(chat);
+      return chatInput = new ChatInput("chat-submit", "chat-input", chat);
     };
     return app(jQuery);
   });
