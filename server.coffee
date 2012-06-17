@@ -1,8 +1,8 @@
 http = require 'http'
-mu = require 'mustache'
 util = require 'util'
 fs = require 'fs'
 path = require 'path'
+qs = require 'querystring'
 
 start = ->
 	http.createServer(requestHandler).listen(8888)	
@@ -27,11 +27,18 @@ getHandler = (file_path, response) ->
 	
 postHandler = (file_path, request, response) ->
 	console.log "POST received, POST Handler responding"
+	body = ''
+	request.on 'data', (data) ->
+		body += data
+	request.on 'end', ->
+		POST = qs.parse body
+		console.log POST
+	
 	router file_path, response
 	
 router = (file_path, response) ->
 	if file_path is './'
-		serveSync "./index.html", response, "text/html" 
+		serveSync "app/views/index.html", response, "text/html" 
 		return
 		
 	extension = path.extname file_path
